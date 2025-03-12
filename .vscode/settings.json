@@ -1,0 +1,5 @@
+{
+    "editor.find.globalFindClipboard": true,
+    "search.globalFindClipboard": true,
+    "terminal.integrated.copyOnSelection": true
+}
