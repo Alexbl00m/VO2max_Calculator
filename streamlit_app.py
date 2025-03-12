@@ -75,7 +75,7 @@ st.markdown("#### Scientifically validated methods to estimate your VO2max on th
 st.markdown("---")
 
 # Move scientific info to the beginning
-with st.expander("About VO2max and This Calculator", expanded=False):
+with st.expander("About VO2max and This Calculator", expanded=True):
     st.markdown("""
     ### What is VO2max?
     
@@ -102,7 +102,7 @@ with st.expander("About VO2max and This Calculator", expanded=False):
     """)
     
 # Create tabs for different calculation methods
-tab1, tab2, tab3, tab4 = st.tabs(["5-Min Test", "6-Min Test", "Ramp Test", "FTP-Based Estimate"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["5-Min Test", "6-Min Test", "4-Min Test", "3-Min Test", "Ramp Test", "FTP-Based Estimate"])
 
 # Define calculation functions
 def calculate_vo2max_5min(weight, power):
@@ -123,6 +123,26 @@ def calculate_vo2max_6min(weight, power):
     vo2max_ml_kg_min = (power * 10.8 / weight) + 7
     vo2max_ml_min = vo2max_ml_kg_min * weight
     return power, power/weight, vo2max_ml_min, vo2max_ml_kg_min
+
+def calculate_vo2max_4min(weight, power):
+    """
+    Calculate VO2max using 4-minute maximal effort test
+    Based on interpolation between 3-min and 5-min test formulas
+    """
+    power_to_weight = power / weight
+    vo2max_ml_kg_min = 15.0 + (9.2 * power_to_weight)
+    vo2max_ml_min = vo2max_ml_kg_min * weight
+    return power, power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
+
+def calculate_vo2max_3min(weight, peak_power):
+    """
+    Calculate VO2max using 3-minute all-out test
+    Based on: Burnley et al. (2006) and Vanhatalo et al. (2007)
+    """
+    peak_power_to_weight = peak_power / weight
+    vo2max_ml_kg_min = 12.2 * peak_power_to_weight + 9.8
+    vo2max_ml_min = vo2max_ml_kg_min * weight
+    return peak_power, peak_power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
 
 def calculate_vo2max_ramp(weight, final_power, time_to_exhaustion):
     """
@@ -303,8 +323,68 @@ with tab2:
         power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_6min(weight_6min, power_6min)
         display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
 
-# Ramp Test Tab
+# 4-Minute Test Tab
 with tab3:
+    st.header("4-Minute Maximal Effort Test")
+    
+    st.markdown("""
+    ### Protocol
+    
+    1. Perform a thorough warm-up (10-15 minutes)
+    2. Complete a 4-minute all-out effort, maintaining the highest possible power output
+    3. Record your average power for the 4-minute effort
+    
+    This test offers a balance between anaerobic and aerobic energy contributions. The 4-minute duration has been shown to be a good predictor of cycling performance and can be used to estimate VO2max.
+    
+    The formula used is based on interpolation between validated 3-minute and 5-minute test formulas, accounting for the specific physiological demands of a 4-minute maximal effort.
+    
+    **References:** 
+    - Lamberts, R. P., Swart, J., Noakes, T. D., & Lambert, M. I. (2012). A novel submaximal cycle test to monitor fatigue and predict cycling performance. British Journal of Sports Medicine, 46(3), 160-166.
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        weight_4min = st.number_input("Body Weight (kg)", min_value=30.0, max_value=150.0, value=70.0, step=0.1, key="weight_4min")
+    
+    with col2:
+        power_4min = st.number_input("Average Power (W)", min_value=50, max_value=600, value=310, step=5, key="power_4min")
+    
+    if st.button("Calculate VO2max (4-min Test)", key="calculate_4min"):
+        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_4min(weight_4min, power_4min)
+        display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
+
+# 3-Minute Test Tab
+with tab4:
+    st.header("3-Minute All-Out Test")
+    
+    st.markdown("""
+    ### Protocol
+    
+    1. Perform a thorough warm-up (10-15 minutes)
+    2. Complete a true all-out 3-minute effort with NO pacing strategy
+    3. Record your peak power (highest 5-second average) during the test
+    
+    This test was originally designed to determine Critical Power (CP) and W' (W-prime), but can also be used to estimate VO2max. The key is performing a genuinely maximal effort from the start - you should reach your peak power in the first 5-10 seconds.
+    
+    The formula used is derived from the relationship between peak power-to-weight ratio and directly measured VO2max values.
+    
+    **References:** 
+    - Burnley, M., Doust, J. H., & Vanhatalo, A. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state. Medicine and Science in Sports and Exercise, 38(11), 1995-2003.
+    - Vanhatalo, A., Doust, J. H., & Burnley, M. (2007). Determination of critical power using a 3-min all-out cycling test. Medicine and Science in Sports and Exercise, 39(3), 548-555.
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        weight_3min = st.number_input("Body Weight (kg)", min_value=30.0, max_value=150.0, value=70.0, step=0.1, key="weight_3min")
+    
+    with col2:
+        peak_power_3min = st.number_input("Peak Power (W) - highest 5s average", min_value=100, max_value=1200, value=600, step=10, key="peak_power_3min")
+    
+    if st.button("Calculate VO2max (3-min Test)", key="calculate_3min"):
+        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_3min(weight_3min, peak_power_3min)
+        display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
     st.header("Ramp Test")
     
     st.markdown("""
@@ -338,7 +418,7 @@ with tab3:
         display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
 
 # FTP-Based Estimate Tab
-with tab4:
+with tab6:
     st.header("FTP-Based Estimate")
     
     st.markdown("""
