@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+# Removing unused imports
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 from datetime import datetime
 
 # Set page configuration
@@ -11,6 +12,57 @@ st.set_page_config(
     page_icon="🚴",
     layout="wide"
 )
+
+# Add comparison chart section at the bottom of the page
+st.markdown("---")
+st.header("Training Insights & Recommendations")
+
+with st.expander("Understanding Your VO2max Results", expanded=False):
+    st.markdown("""
+    ### Interpreting Your VO2max Results
+    
+    Your VO2max is a key performance indicator, but it's important to understand how to use this information effectively:
+    
+    - **Performance Potential**: VO2max sets your aerobic ceiling - it represents your maximum aerobic energy production capacity
+    - **Trainability**: VO2max can be improved through training, though it's also influenced by genetics
+    - **Training Implications**: Different VO2max levels may benefit from different training approaches
+    
+    ### How to Improve Your VO2max
+    
+    #### For Cyclists with Lower VO2max Values (<45 ml/kg/min):
+    - Focus on building consistent aerobic base with longer endurance rides
+    - Gradually introduce interval training (2-3 sessions per week)
+    - Recommended: 4-6 x 3-5 minutes at 85-90% of maximum heart rate with equal recovery
+    
+    #### For Cyclists with Moderate VO2max Values (45-55 ml/kg/min):
+    - Balance endurance rides with more structured intensity
+    - Incorporate targeted VO2max intervals (2 sessions per week)
+    - Recommended: 3-5 x 3-5 minutes at 90-95% of maximum heart rate with equal recovery
+    
+    #### For Cyclists with Higher VO2max Values (>55 ml/kg/min):
+    - Focus on maintaining VO2max while developing other limiters (threshold, economy)
+    - Use more specific VO2max sessions (1-2 per week)
+    - Recommended: 6-8 x 2-3 minutes at 100-110% FTP with 2-3 minutes recovery
+    
+    Remember that improvements in cycling performance come from a well-rounded approach that includes proper recovery, nutrition, and addressing all physiological systems, not just VO2max.
+    """)
+
+# Add footer with citations
+st.markdown("---")
+st.markdown("""
+<footer>
+    <p>© 2025 Lindblom Coaching. All rights reserved.</p>
+    <p>This calculator is based on scientific research and provides estimates only. For laboratory-measured VO2max, please consult with a sports science facility.</p>
+    <p><strong>Scientific References:</strong></p>
+    <ol>
+        <li>Hawley, J. A., & Noakes, T. D. (1992). Peak power output predicts maximal oxygen uptake and performance time in trained cyclists. European Journal of Applied Physiology, 65(1), 79-83.</li>
+        <li>Ingham, S. A., Fudge, B. W., Pringle, J. S., & Jones, A. M. (2013). Improvement of 800-m running performance with prior high-intensity exercise. International Journal of Sports Physiology and Performance, 8(1), 77-83.</li>
+        <li>Burnley, M., Doust, J. H., & Vanhatalo, A. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state. Medicine and Science in Sports and Exercise, 38(11), 1995-2003.</li>
+        <li>Coggan, A. R. (2003). Training and racing using a power meter: An introduction. Presentation to the US Olympic Committee.</li>
+        <li>Billat, V. L., Flechet, B., Petit, B., Muriaux, G., & Koralsztein, J. P. (1999). Interval training at VO2max: effects on aerobic performance and overtraining markers. Medicine and Science in Sports and Exercise, 31(1), 156-163.</li>
+    </ol>
+</footer>
+""", unsafe_allow_html=True)
 
 # Custom CSS to use Montserrat font and match brand colors
 st.markdown("""
@@ -67,7 +119,7 @@ footer {
 """, unsafe_allow_html=True)
 
 # Brand logo
-st.image("/workspaces/VO2max_Calculator/Logotype_Light@2x.png", width=300)  # Using the logo from Image 2
+st.image("https://i.imgur.com/xSYULf0.png", width=300)  # Using the logo from Image 2
 
 st.title("Cyclist VO2max Calculator")
 st.markdown("#### Scientifically validated methods to estimate your VO2max on the bike")
@@ -301,4 +353,10 @@ with tab3:
         final_power = st.number_input("Final Completed Power Stage (W)", min_value=100, max_value=600, value=325, step=25, key="power_ramp")
     
     with col3:
-        time_sec = st.number_input("Seconds into Final Stage", min_value=0, max
+        time_sec = st.number_input("Seconds into Final Stage", min_value=0, max_value=60, value=30, step=5, key="time_ramp")
+    
+    if st.button("Calculate VO2max (Ramp Test)"):
+        # Calculate total time to exhaustion in seconds
+        time_to_exhaustion = ((final_power - 100) / 25) * 60 + time_sec  # Assuming 25W increments
+        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_ramp(weight_ramp, final_power, time_to_exhaustion)
+        display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
