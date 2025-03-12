@@ -68,7 +68,7 @@ footer {
 """, unsafe_allow_html=True)
 
 # Brand logo
-st.image("https://raw.githubusercontent.com/aleksandrlindblom/VO2max_Calculator/main/Logotype_Light@2x.png", width=300)
+st.image("https://raw.githubusercontent.com/alexbl00m/VO2max_Calculator/main/Logotype_Light@2x.png", width=300)
 
 st.title("Cyclist VO2max Calculator")
 st.markdown("#### Scientifically validated methods to estimate your VO2max on the bike")
