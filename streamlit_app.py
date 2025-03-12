@@ -92,13 +92,13 @@ with st.expander("About VO2max and This Calculator", expanded=True):
     
     All calculations are based on peer-reviewed research studies, which are referenced for each method:
     
-    1. **5-Min Test**: Hawley, J. A., & Noakes, T. D. (1992). Peak power output predicts maximal oxygen uptake and performance time in trained cyclists.
+    1. **5-Min Test**: Sitko et al. (2021) - Five-Minute Power-Based Test to Predict Maximal Oxygen Consumption in Road Cycling
     
-    2. **6-Min Test**: Ingham, S. A., et al. (2013). Improvement of 800-m running performance with prior high-intensity exercise.
+    2. **6-Min Test**: Formula: VO₂max = (6 min Power × 10.8 / weight) + 7, validated against laboratory measurements
     
-    3. **Ramp Test**: Burnley, M., et al. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state.
+    3. **Ramp Test**: Kuipers protocol for MAP calculation, with validated VO2max estimation formula
     
-    4. **FTP-Based**: Coggan, A. R. (2003). Training and racing using a power meter: An introduction.
+    4. **FTP-Based**: Coggan's research on the relationship between FTP and power at VO2max (117%)
     """)
     
 # Create tabs for different calculation methods
@@ -287,68 +287,8 @@ with tab2:
         power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_6min(weight_6min, power_6min)
         display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
 
-# 4-Minute Test Tab
+# Ramp Test Tab
 with tab3:
-    st.header("4-Minute Maximal Effort Test")
-    
-    st.markdown("""
-    ### Protocol
-    
-    1. Perform a thorough warm-up (10-15 minutes)
-    2. Complete a 4-minute all-out effort, maintaining the highest possible power output
-    3. Record your average power for the 4-minute effort
-    
-    This test offers a balance between anaerobic and aerobic energy contributions. The 4-minute duration has been shown to be a good predictor of cycling performance and can be used to estimate VO2max.
-    
-    The formula used is based on interpolation between validated 3-minute and 5-minute test formulas, accounting for the specific physiological demands of a 4-minute maximal effort.
-    
-    **References:** 
-    - Lamberts, R. P., Swart, J., Noakes, T. D., & Lambert, M. I. (2012). A novel submaximal cycle test to monitor fatigue and predict cycling performance. British Journal of Sports Medicine, 46(3), 160-166.
-    """)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        weight_4min = st.number_input("Body Weight (kg)", min_value=30.0, max_value=150.0, value=70.0, step=0.1, key="weight_4min")
-    
-    with col2:
-        power_4min = st.number_input("Average Power (W)", min_value=50, max_value=600, value=310, step=5, key="power_4min")
-    
-    if st.button("Calculate VO2max (4-min Test)", key="calculate_4min"):
-        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_4min(weight_4min, power_4min)
-        display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
-
-# 3-Minute Test Tab
-with tab4:
-    st.header("3-Minute All-Out Test")
-    
-    st.markdown("""
-    ### Protocol
-    
-    1. Perform a thorough warm-up (10-15 minutes)
-    2. Complete a true all-out 3-minute effort with NO pacing strategy
-    3. Record your peak power (highest 5-second average) during the test
-    
-    This test was originally designed to determine Critical Power (CP) and W' (W-prime), but can also be used to estimate VO2max. The key is performing a genuinely maximal effort from the start - you should reach your peak power in the first 5-10 seconds.
-    
-    The formula used is derived from the relationship between peak power-to-weight ratio and directly measured VO2max values.
-    
-    **References:** 
-    - Burnley, M., Doust, J. H., & Vanhatalo, A. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state. Medicine and Science in Sports and Exercise, 38(11), 1995-2003.
-    - Vanhatalo, A., Doust, J. H., & Burnley, M. (2007). Determination of critical power using a 3-min all-out cycling test. Medicine and Science in Sports and Exercise, 39(3), 548-555.
-    """)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        weight_3min = st.number_input("Body Weight (kg)", min_value=30.0, max_value=150.0, value=70.0, step=0.1, key="weight_3min")
-    
-    with col2:
-        peak_power_3min = st.number_input("Peak Power (W) - highest 5s average", min_value=100, max_value=1200, value=600, step=10, key="peak_power_3min")
-    
-    if st.button("Calculate VO2max (3-min Test)", key="calculate_3min"):
-        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_3min(weight_3min, peak_power_3min)
-        display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
     st.header("Ramp Test")
     
     st.markdown("""
@@ -452,9 +392,8 @@ st.markdown("""
     <p>This calculator is based on scientific research and provides estimates only. For laboratory-measured VO2max, please consult with a sports science facility.</p>
     <p><strong>Scientific References:</strong></p>
     <ol>
-        <li>Hawley, J. A., & Noakes, T. D. (1992). Peak power output predicts maximal oxygen uptake and performance time in trained cyclists. European Journal of Applied Physiology, 65(1), 79-83.</li>
-        <li>Ingham, S. A., Fudge, B. W., Pringle, J. S., & Jones, A. M. (2013). Improvement of 800-m running performance with prior high-intensity exercise. International Journal of Sports Physiology and Performance, 8(1), 77-83.</li>
-        <li>Burnley, M., Doust, J. H., & Vanhatalo, A. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state. Medicine and Science in Sports and Exercise, 38(11), 1995-2003.</li>
+        <li>Sitko, S., Cirer-Sastre, R., Corbi, F., & López-Laval, I. (2021). Five-Minute Power-Based Test to Predict Maximal Oxygen Consumption in Road Cycling. International Journal of Sports Physiology and Performance.</li>
+        <li>Kuipers, H., Verstappen, F. T., Keizer, H. A., Geurten, P., & Van Kranenburg, G. (1985). Variability of aerobic performance in the laboratory and its physiologic correlates. International Journal of Sports Medicine, 6(4), 197-201.</li>
         <li>Coggan, A. R. (2003). Training and racing using a power meter: An introduction. Presentation to the US Olympic Committee.</li>
         <li>Billat, V. L., Flechet, B., Petit, B., Muriaux, G., & Koralsztein, J. P. (1999). Interval training at VO2max: effects on aerobic performance and overtraining markers. Medicine and Science in Sports and Exercise, 31(1), 156-163.</li>
     </ol>
