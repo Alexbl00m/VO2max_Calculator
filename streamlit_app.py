@@ -102,7 +102,7 @@ with st.expander("About VO2max and This Calculator", expanded=True):
     """)
     
 # Create tabs for different calculation methods
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["5-Min Test", "6-Min Test", "4-Min Test", "3-Min Test", "Ramp Test", "FTP-Based Estimate"])
+tab1, tab2, tab3, tab4 = st.tabs(["5-Min Test", "6-Min Test", "Ramp Test", "FTP-Based Estimate"])
 
 # Define calculation functions
 def calculate_vo2max_5min(weight, power):
@@ -124,26 +124,6 @@ def calculate_vo2max_6min(weight, power):
     vo2max_ml_min = vo2max_ml_kg_min * weight
     return power, power/weight, vo2max_ml_min, vo2max_ml_kg_min
 
-def calculate_vo2max_4min(weight, power):
-    """
-    Calculate VO2max using 4-minute maximal effort test
-    Based on interpolation between 3-min and 5-min test formulas
-    """
-    power_to_weight = power / weight
-    vo2max_ml_kg_min = 15.0 + (9.2 * power_to_weight)
-    vo2max_ml_min = vo2max_ml_kg_min * weight
-    return power, power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
-
-def calculate_vo2max_3min(weight, peak_power):
-    """
-    Calculate VO2max using 3-minute all-out test
-    Based on: Burnley et al. (2006) and Vanhatalo et al. (2007)
-    """
-    peak_power_to_weight = peak_power / weight
-    vo2max_ml_kg_min = 12.2 * peak_power_to_weight + 9.8
-    vo2max_ml_min = vo2max_ml_kg_min * weight
-    return peak_power, peak_power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
-
 def calculate_vo2max_ramp(weight, final_power, time_to_exhaustion):
     """
     Calculate VO2max using ramp test
@@ -151,7 +131,7 @@ def calculate_vo2max_ramp(weight, final_power, time_to_exhaustion):
     """
     # Calculate MAP (Maximal Aerobic Power)
     next_to_last_power = final_power - 25  # Assuming 25W increments
-    seconds_in_final_stage = time_to_exhaustion % 60
+    seconds_in_final_stage = time_to_exhaustion
     map_power = next_to_last_power + ((seconds_in_final_stage / 150) * 25)
     
     # Calculate VO2max from MAP
@@ -181,31 +161,15 @@ def display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min):
     with col1:
         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
         st.subheader("Power Metrics")
-        st.metric(
-            label="Power at VO2max", 
-            value=f"{power_vo2max:.0f} W",
-            delta=None
-        )
-        st.metric(
-            label="Weight-normalized Power", 
-            value=f"{power_kg:.2f} W/kg",
-            delta=None
-        )
+        st.write(f"<h3 style='color:#E6754E;'>Power at VO2max: <span style='color:#333333;'>{power_vo2max:.0f} W</span></h3>", unsafe_allow_html=True)
+        st.write(f"<h3 style='color:#E6754E;'>Weight-normalized Power: <span style='color:#333333;'>{power_kg:.2f} W/kg</span></h3>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
         
     with col2:
         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
         st.subheader("Oxygen Consumption")
-        st.metric(
-            label="VO2max", 
-            value=f"{vo2max_ml_min:.0f} ml/min",
-            delta=None
-        )
-        st.metric(
-            label="Weight-normalized VO2max", 
-            value=f"{vo2max_ml_kg_min:.1f} ml/min/kg",
-            delta=None
-        )
+        st.write(f"<h3 style='color:#E6754E;'>VO2max: <span style='color:#333333;'>{vo2max_ml_min:.0f} ml/min</span></h3>", unsafe_allow_html=True)
+        st.write(f"<h3 style='color:#E6754E;'>Weight-normalized VO2max: <span style='color:#333333;'>{vo2max_ml_kg_min:.1f} ml/min/kg</span></h3>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     
     # Classification table
@@ -418,7 +382,7 @@ with tab4:
         display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
 
 # FTP-Based Estimate Tab
-with tab6:
+with tab4:
     st.header("FTP-Based Estimate")
     
     st.markdown("""
