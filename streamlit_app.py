@@ -119,7 +119,7 @@ footer {
 """, unsafe_allow_html=True)
 
 # Brand logo
-st.image("https://i.imgur.com/xSYULf0.png", width=300)  # Using the logo from Image 2
+st.image("/workspaces/VO2max_Calculator/Logotype_Light@2x.png", width=300)  # Using the logo from Image 2
 
 st.title("Cyclist VO2max Calculator")
 st.markdown("#### Scientifically validated methods to estimate your VO2max on the bike")
