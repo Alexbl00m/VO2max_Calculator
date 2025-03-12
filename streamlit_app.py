@@ -68,14 +68,14 @@ footer {
 """, unsafe_allow_html=True)
 
 # Brand logo
-st.image("https://raw.githubusercontent.com/alexbl00m/VO2max_Calculator/main/Logotype_Light@2x.png", width=300)
+st.image("https://raw.githubusercontent.com/aleksandrlindblom/VO2max_Calculator/main/Logotype_Light@2x.png", width=300)
 
 st.title("Cyclist VO2max Calculator")
 st.markdown("#### Scientifically validated methods to estimate your VO2max on the bike")
 st.markdown("---")
 
 # Move scientific info to the beginning
-with st.expander("About VO2max and This Calculator", expanded=True):
+with st.expander("About VO2max and This Calculator", expanded=False):
     st.markdown("""
     ### What is VO2max?
     
@@ -108,34 +108,37 @@ tab1, tab2, tab3, tab4 = st.tabs(["5-Min Test", "6-Min Test", "Ramp Test", "FTP-
 def calculate_vo2max_5min(weight, power):
     """
     Calculate VO2max using 5-minute maximal effort test
-    Based on: Hawley & Noakes (1992) - Peak power output predicts maximal oxygen uptake
+    Based on: Sitko et al. (2021) - Five-Minute Power-Based Test to Predict Maximal Oxygen Consumption in Road Cycling
     """
-    vo2max_ml_min = (10.8 * power + 7) * 1000 / 1000
-    vo2max_ml_kg_min = vo2max_ml_min / weight
-    return power, power/weight, vo2max_ml_min, vo2max_ml_kg_min
+    power_to_weight = power / weight
+    vo2max_ml_kg_min = 16.6 + (8.87 * power_to_weight)
+    vo2max_ml_min = vo2max_ml_kg_min * weight
+    return power, power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
 
 def calculate_vo2max_6min(weight, power):
     """
     Calculate VO2max using 6-minute maximal effort test
-    Based on: Ingham et al. (2013) - Improvement of 800-m running performance with prior high-intensity exercise
-    Modified for cycling by research from Billat et al.
+    Formula: VO₂max = (6 min Power × 10.8 / weight) + 7
     """
-    vo2max_ml_min = (11.2 * power + 10) * 1000 / 1000
-    vo2max_ml_kg_min = vo2max_ml_min / weight
+    vo2max_ml_kg_min = (power * 10.8 / weight) + 7
+    vo2max_ml_min = vo2max_ml_kg_min * weight
     return power, power/weight, vo2max_ml_min, vo2max_ml_kg_min
 
 def calculate_vo2max_ramp(weight, final_power, time_to_exhaustion):
     """
     Calculate VO2max using ramp test
-    Based on: Burnley et al. (2006) - Estimation of critical power using a 3-min all-out cycling test
+    Based on: Kuipers protocol with VO2max estimation formula
     """
-    # Convert time to minutes
-    time_min = time_to_exhaustion / 60
+    # Calculate MAP (Maximal Aerobic Power)
+    next_to_last_power = final_power - 25  # Assuming 25W increments
+    seconds_in_final_stage = time_to_exhaustion % 60
+    map_power = next_to_last_power + ((seconds_in_final_stage / 150) * 25)
     
-    # Ramp test calculation
-    vo2max_ml_min = (final_power * 12.4 + 3.5 * weight) * 1000 / 1000
+    # Calculate VO2max from MAP
+    vo2max_l_min = 0.01141 * map_power + 0.435
+    vo2max_ml_min = vo2max_l_min * 1000
     vo2max_ml_kg_min = vo2max_ml_min / weight
-    vo2max_power = final_power * 0.95  # Power at VO2max is approximately 95% of peak power in ramp test
+    vo2max_power = map_power
     
     return vo2max_power, vo2max_power/weight, vo2max_ml_min, vo2max_ml_kg_min
 
@@ -145,10 +148,11 @@ def calculate_vo2max_from_ftp(weight, ftp):
     Based on: Coggan's research on the relationship between FTP and VO2max
     """
     vo2max_power = ftp * 1.17  # Approximate relationship based on power at VO2max being ~117% of FTP
-    vo2max_ml_min = (10.8 * vo2max_power + 7) * 1000 / 1000
-    vo2max_ml_kg_min = vo2max_ml_min / weight
+    power_to_weight = vo2max_power / weight
+    vo2max_ml_kg_min = 16.6 + (8.87 * power_to_weight)  # Using the same formula as 5-min test
+    vo2max_ml_min = vo2max_ml_kg_min * weight
     
-    return vo2max_power, vo2max_power/weight, vo2max_ml_min, vo2max_ml_kg_min
+    return vo2max_power, power_to_weight, vo2max_ml_min, vo2max_ml_kg_min
 
 # Function to display results
 def display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min):
@@ -157,15 +161,31 @@ def display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min):
     with col1:
         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
         st.subheader("Power Metrics")
-        st.metric("Power at VO2max", f"{power_vo2max:.0f} W")
-        st.metric("Weight-normalized Power", f"{power_kg:.2f} W/kg")
+        st.metric(
+            label="Power at VO2max", 
+            value=f"{power_vo2max:.0f} W",
+            delta=None
+        )
+        st.metric(
+            label="Weight-normalized Power", 
+            value=f"{power_kg:.2f} W/kg",
+            delta=None
+        )
         st.markdown("</div>", unsafe_allow_html=True)
         
     with col2:
         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
         st.subheader("Oxygen Consumption")
-        st.metric("VO2max", f"{vo2max_ml_min:.0f} ml/min")
-        st.metric("Weight-normalized VO2max", f"{vo2max_ml_kg_min:.1f} ml/min/kg")
+        st.metric(
+            label="VO2max", 
+            value=f"{vo2max_ml_min:.0f} ml/min",
+            delta=None
+        )
+        st.metric(
+            label="Weight-normalized VO2max", 
+            value=f"{vo2max_ml_kg_min:.1f} ml/min/kg",
+            delta=None
+        )
         st.markdown("</div>", unsafe_allow_html=True)
     
     # Classification table
@@ -238,9 +258,9 @@ with tab1:
     2. Complete a 5-minute all-out effort, maintaining the highest possible power output
     3. Record your average power for the 5-minute effort
     
-    This test is based on research by Hawley & Noakes (1992) showing strong correlation between peak power output in short maximal tests and laboratory-measured VO2max.
+    This test is based on research by Sitko et al. (2021) showing strong correlation between 5-minute power-to-weight ratio and laboratory-measured VO2max in road cyclists.
     
-    **Reference:** Hawley, J. A., & Noakes, T. D. (1992). Peak power output predicts maximal oxygen uptake and performance time in trained cyclists. European Journal of Applied Physiology, 65(1), 79-83.
+    **Reference:** Sitko, S., Cirer-Sastre, R., Corbi, F., & López-Laval, I. (2021). Five-Minute Power-Based Test to Predict Maximal Oxygen Consumption in Road Cycling. International Journal of Sports Physiology and Performance.
     """)
     
     col1, col2 = st.columns(2)
@@ -266,9 +286,9 @@ with tab2:
     2. Complete a 6-minute all-out effort, maintaining the highest possible power output
     3. Record your average power for the 6-minute effort
     
-    This test is based on research by Ingham et al. (2013) and modified for cycling based on work by Billat et al. showing strong correlation between sustained power output and directly measured VO2max.
+    This test is based on the formula VO₂max = (6 min Power × 10.8 / weight) + 7, which correlates well with laboratory measurements. The 6-minute duration provides a good balance between aerobic contribution and sustainability.
     
-    **Reference:** Ingham, S. A., Fudge, B. W., Pringle, J. S., & Jones, A. M. (2013). Improvement of 800-m running performance with prior high-intensity exercise. International Journal of Sports Physiology and Performance, 8(1), 77-83.
+    Several cycling-specific calculators utilize this approach, including Zwift Hacks FTP/MAP calculator, which uses similar principles to estimate VO2max from sustained power outputs.
     """)
     
     col1, col2 = st.columns(2)
@@ -293,11 +313,13 @@ with tab3:
     1. Perform a thorough warm-up (10-15 minutes)
     2. Start at a low power (e.g., 100W for men, 75W for women)
     3. Increase power by 25W every minute until exhaustion
-    4. Record your final completed power stage and time to exhaustion
+    4. Record your final completed power stage and time into the final stage
     
-    This test is based on research by Burnley et al. (2006) showing strong correlation between ramp test performance and laboratory-measured VO2max.
+    This test uses the Kuipers protocol to calculate Maximal Aerobic Power (MAP), then converts MAP to VO2max. The calculation first determines MAP using the next-to-last completed stage plus a fraction of the final stage, then applies a validated formula to estimate VO2max.
     
-    **Reference:** Burnley, M., Doust, J. H., & Vanhatalo, A. (2006). A 3-min all-out test to determine peak oxygen uptake and the maximal steady state. Medicine and Science in Sports and Exercise, 38(11), 1995-2003.
+    **References:** 
+    - Kuipers, H., Verstappen, F. T., Keizer, H. A., Geurten, P., & Van Kranenburg, G. (1985). Variability of aerobic performance in the laboratory and its physiologic correlates. International Journal of Sports Medicine, 6(4), 197-201.
+    - Michael Konczer's training calculator (michael-konczer.com) uses this protocol for VO2max estimation from ramp tests.
     """)
     
     col1, col2, col3 = st.columns(3)
@@ -312,9 +334,7 @@ with tab3:
         time_sec = st.number_input("Seconds into Final Stage", min_value=0, max_value=60, value=30, step=5, key="time_ramp")
     
     if st.button("Calculate VO2max (Ramp Test)", key="calculate_ramp"):
-        # Calculate total time to exhaustion in seconds
-        time_to_exhaustion = ((final_power - 100) / 25) * 60 + time_sec  # Assuming 25W increments
-        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_ramp(weight_ramp, final_power, time_to_exhaustion)
+        power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min = calculate_vo2max_ramp(weight_ramp, final_power, time_sec)
         display_results(power_vo2max, power_kg, vo2max_ml_min, vo2max_ml_kg_min)
 
 # FTP-Based Estimate Tab
@@ -325,11 +345,13 @@ with tab4:
     ### Protocol
     
     1. Use your known FTP (Functional Threshold Power) value
-    2. This method estimates VO2max based on the established relationship between FTP and VO2max
+    2. This method estimates VO2max based on the established relationship between FTP and power at VO2max
     
-    This estimation is based on research by Dr. Andrew Coggan showing the relationship between FTP and power at VO2max.
+    This calculation uses Dr. Andrew Coggan's finding that power at VO2max is typically about 117% of FTP. We then apply the 5-minute test formula to this derived power value, as the power at VO2max would be sustainable for approximately 5 minutes.
     
-    **Reference:** Coggan, A. R. (2003). Training and racing using a power meter: An introduction. Presentation to the US Olympic Committee.
+    **References:** 
+    - Coggan, A. R. (2003). Training and racing using a power meter: An introduction. Presentation to the US Olympic Committee.
+    - Combined with the Sitko et al. (2021) formula for calculating VO2max from power-to-weight ratio.
     """)
     
     col1, col2 = st.columns(2)
